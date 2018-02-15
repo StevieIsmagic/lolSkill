@@ -1,19 +1,17 @@
 const axios = require('axios');
+const playerIdByName = require('./utils.js').findPlayerIdByName;
 
-const playerStatisticsByName = playerName => {
-  console.log(playerName);
-};
+console.log(playerIdByName);
+// const playerStatisticsByName = playerName => {
+//   console.log(playerName);
+// };
 
-const findPlayerByName = name => {
-  axios
-    .get(`https://www.google.com/search?q=${name}`)
-    .then(res => {
-      console.log(res);
-    })
-    .catch(error => {
-      console.log(error);
-    });
-};
+// const findPlayerByName = name =>
 
 // playerStatisticsByName('Doublelift');
-findPlayerByName('Doublelift');
+const playerIdPromise = playerIdByName('Doublelift');
+console.log(playerIdPromise);
+
+playerIdPromise.then(res => {
+  console.log(res.data);
+});
