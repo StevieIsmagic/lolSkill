@@ -1,5 +1,5 @@
 const axios = require('axios');
-const apiKey = 'RGAPI-7a7fd01d-0e08-411a-924d-843bf8a57411';
+const apiKey = require('./secret.js').riotGamesApiKey;
 
 const findPlayerIdByName = name =>
   axios
