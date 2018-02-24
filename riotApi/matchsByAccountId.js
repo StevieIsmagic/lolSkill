@@ -8,7 +8,6 @@ const matchsByAccountId = (accountId) =>
       `https://na1.api.riotgames.com/lol/match/v3/matchlists/by-account/${accountId}?api_key=${apiKey}`
     )
     .then(res => {
-      console.log(res);
       return res;
     })
     .catch(error => {

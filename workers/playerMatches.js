@@ -2,20 +2,22 @@
 const matchsByAccountId = require('../riotApi').matchsByAccountId;
 const accountIdByPlayerName = require('../riotApi').accountIdByPlayerName;
 const players = new Map();
+global.playerss = players;
 const matches = new Map();
-const playerData = {};
-const matchData = {
-  matchdata : ''
+const playerData = {
+  matches: []
 };
 
 //  lastRetrieve : new Date('December 17, 2010').getTime(),
 players.set('DoubleLift', playerData);
+players.set('KingVexx', playerData);
+players.set('Ikzencriel', playerData);
 players.set('LAFLKDAMKAMDVKSMGDOASJGOASJGDOASJGDSGDOSJG', playerData);
 //const accountIdByPlayerName = require('./utils').accountIdByPlayerName;
 //const matchsByAccountId = require('./matchsByAccountId');
 
 
-const matchStatisticsWorker = async () => {
+const playerMatchesWorker = async () => {
 //  matches.set(matchID, { ...matchData, receivedData });
 // must iterate over players map and retrieve from riot api
   Array.from(players.entries()).forEach(async (data) => {
@@ -29,7 +31,13 @@ const matchStatisticsWorker = async () => {
     }
     matchsByAccountId(playerData.accountId).then(res => {
       if (!res.data) return;
-      res.data.forEach(game => {
+      res.data.matches.forEach(game => {
+        const matchData = { ...{},
+          role: game.role,
+          lane: game.lane,
+          champion: game.champion,
+        }
+        playerData.matches.push({ gameId: game.gameId, extra: matchData });
         matches.set(game.gameId, {});
       })
       players.set(playerName, playerData);
@@ -37,9 +45,9 @@ const matchStatisticsWorker = async () => {
     .catch(res => players.delete(playerName));
   });
 };
-
-matchStatisticsWorker();
+playerMatchesWorker();
+global.setTimeout(() => console.log(players), 3500);
 
 module.exports = {
-  matchStatisticsWorker,
+  playerMatchesWorker,
 };
