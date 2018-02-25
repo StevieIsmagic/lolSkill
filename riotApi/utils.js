@@ -6,14 +6,9 @@ const accountIdByPlayerName = name =>
     .get(
       `https://na1.api.riotgames.com/lol/summoner/v3/summoners/by-name/${name}?api_key=${apiKey}`
     )
-    .then(res => {
-      // console.log(res);
-      return res;
-    })
-    .catch(error => {
-      // console.log(error);
-      return error;
-    });
+    .then(res => res.data.accountId)
+    .catch(error => null)
+
 
 module.exports = {
   accountIdByPlayerName
