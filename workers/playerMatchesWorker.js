@@ -2,79 +2,70 @@
 const util = require('util');
 const setTimeoutPromise = util.promisify(setTimeout);
 const matchsByAccountId = require('../riotApi').matchsByAccountId;
-console.log(matchsByAccountId);
 const accountIdByPlayerName = require('../riotApi').accountIdByPlayerName;
 const matchByMatchId = require('../riotApi').matchByMatchId;
 const players = new Map();
-global.playerss = players;
+global.players = players;
 const matches = new Map();
 const playerData = {
-  matches: {}
+  matches: [],
+  caseSensitiveName : ''
 };
 
 //  lastRetrieve : new Date('December 17, 2010').getTime(),
 players.set('LAFLKDAMKAMDVKSMGDOASJGOASJGDOASJGDSGDOSJG', playerData);
-//const accountIdByPlayerName = require('./utils').accountIdByPlayerName;
-//const matchsByAccountId = require('./matchsByAccountId');
-
-const matchStatisticsWorker = async () => {
-  const retrieveData = async (matchId) => {
-    console.log('match', matchId);
-    const matchData = await matchByMatchId(matchId);
-    matches.set(matchId, matchData);
-  };
-  const entries = Array.from(matches.entries());
-  const getMatches = async (index = 0) => {
-    if (index >= entries.length) return true;
-    const matchId = entries[index][0];
-    if (!matchId) return getMatches(++index);
-    retrieveData(matchId);
-    await setTimeoutPromise(5000);
-    return getMatches(++index);
-  }
-  return getMatches();
-};
 
 const playerMatchesWorker = async () => {
-//  matches.set(matchID, { ...matchData, receivedData });
-// must iterate over players map and retrieve from riot api
-  const entries = Array.from(players.entries());
-  const arrangePlayers = async (index = 0) => {
-    if (index >= entries.length) return true;
-    const playerName = entries[index][0];
-    const playerData = entries[index][1];
+// must iterate over players map check if it is an actual account, remove if not, retrieve accountId from riotApi and set up matches map
+  const keys = players.keys();
+  const arrangePlayers = async (key) => {
+    console.log(key);
+    const newKey = keys.next().value;
+    const playerData = players.get(key);
+    const playerName = key;
     const playerAccountId = await accountIdByPlayerName(playerName);
+    if (playerAccountId === 'Forbidden') { 
+      return true;
+    }
+    console.log(playerAccountId);
     if (!playerAccountId) { 
       players.delete(playerName); 
-      return arrangePlayers(++index);
+      return newKey ? arrangePlayers(newKey) : true;
     }
     playerData.accountId = playerAccountId;
     const getPlayerMatches = async () => {
-      const playerMatches = await matchsByAccountId(playerData.accountId);
-      if (!playerMatches) return arrangePlayers(++index);
-      playerMatches.forEach(game => {
+      const playerMatches = await matchsByAccountId(playerData.accountId, 10);
+      if (!playerMatches) return newKey ? arrangePlayers(newKey) : true;
+      playerMatches.forEach((game) => {
         // include this match in matches worker.
-        matches.set(game.gameId, {});
+        if(!matches.get(game.gameId)) matches.set(game.gameId, {});
       });
     };
     await getPlayerMatches();
     players.set(playerName, playerData);
-    return arrangePlayers(++index);
+    if (!newKey) return true;
+    return arrangePlayers(newKey);
   }
-  return await arrangePlayers();
+  return await arrangePlayers(keys.next().value);
 }  
-
+/*
 
 (async () => {
-  players.set('DoubleLift', playerData);
-  players.set('KingVexx', playerData);
-  players.set('Ikzencriel', playerData);
-  console.log('before executing playerMatchsWorker', players);
+  const doba = 'doublelift'.toUpperCase();
+  players.set(doba.toUpperCase(), playerData);
+//  console.log('before executing playerMatchsWorker', players);
   const test = await playerMatchesWorker();
-  console.log(players.get('DoubleLift'));
-  await matchStatisticsWorker();
+  matchStatisticsWorker();
+  await setTimeoutPromise(3000);
+  console.log(players.get(doba));
+  await setTimeoutPromise(4000);
+  console.log(players.get(doba));
+  await setTimeoutPromise(29000);
+  console.log(players.get(doba));
+  console.log(players);
 })()
+*/ 
 
 module.exports = {
   playerMatchesWorker,
-};
+}
