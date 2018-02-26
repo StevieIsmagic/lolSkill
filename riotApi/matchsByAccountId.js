@@ -1,11 +1,11 @@
 const axios = require('axios');
 const apiKey = require('../secret.js').riotGamesApiKey;
 
-const matchsByAccountId = (accountId) => 
+const matchsByAccountId = (accountId, rowLimit) => 
   // playerStatisticsByName('Doublelift');
   axios
     .get(
-      `https://na1.api.riotgames.com/lol/match/v3/matchlists/by-account/${accountId}?api_key=${apiKey}`
+      `https://na1.api.riotgames.com/lol/match/v3/matchlists/by-account/${accountId}?endIndex=10&api_key=${apiKey}`
     )
     .then(res => res.data.matches)
     .catch(error => null)
@@ -22,7 +22,7 @@ const matchByMatchId = (matchId) =>
   // participantsIdentities used to identify who participant is
       const participantsIdentities = res.data.participantIdentities;
       matchInfo.players = participantsIdentities.map(participant => { 
-        return { 'sumonnerName'  : participant.player.summonerName };
+        return { 'summonerName'  : participant.player.summonerName };
       }); 
   //  participants contains the data  for each participant in the related match.
       const participants = res.data.participants;
@@ -55,8 +55,7 @@ const matchByMatchId = (matchId) =>
           laneStatsComputed: timeline.lane 
         });
       });
-      console.log(matchInfo);
-      return res.data
+      return matchInfo 
     })
     .catch(error => null)
 
